@@ -7,8 +7,25 @@ export const register = async (req, res) => {
     const { email, username, password } = req.body
 
     try {
-        // HASH THE PASSWORD
-        const hashPassword = await bcryptjs.hash(password, 10);
+        // Check the validation of the query parameters
+        if (!email || !password || !username) {
+			throw new Error("All fields are required");
+		}
+
+        // Check if the user is already exists
+        const userAlreadyExists =  await prisma.user.findUnique({
+            where: { email },
+        });
+		console.log("userAlreadyExists", userAlreadyExists);
+
+		if (userAlreadyExists) {
+			return res.status(400).json({ success: false, message: "User already exists" });
+		}
+
+
+        // HASH THE PASSWORD AND MAKE A NEW VERIFICATION CODE
+        const hashPassword = bcryptjs.hashSync(password, 12);
+        const verificationToken = Math.floor(100000 + Math.random() * 900000).toString();
 
         // CREATE A NEW USER AND SAVE IT TO DB
         const newUser = await prisma.user.create({
@@ -17,7 +34,7 @@ export const register = async (req, res) => {
             }
         })
 
-
+        console.log(newUser)
         res.status(201).json({ massage: "User created successfully" })
 
     } catch (error) {
@@ -28,23 +45,23 @@ export const register = async (req, res) => {
 }
 
 export const login = async (req, res) => {
-    const { username, password } = req.body;
+    const { email, password } = req.body;
 
     try {
         // CHECK IF THE USER EXISTS
 
         const user = await prisma.user.findUnique({
-            where: { username },
+            where: {  email },
         });
 
-        if (!user) return res.status(400).json({ message: "Invalid Credentials!" });
+        if (!user) return res.status(404).json({ message: "Invalid Credentials!" });
 
         // CHECK IF THE PASSWORD IS CORRECT
 
         const isPasswordValid = await bcryptjs.compare(password, user.password);
 
         if (!isPasswordValid)
-            return res.status(400).json({ message: "Invalid Credentials!" });
+            return res.status(401).json({ message: "Invalid Credentials!" });
 
         // GENERATE COOKIE TOKEN AND SEND TO THE USER
 
@@ -63,13 +80,14 @@ export const login = async (req, res) => {
         const { password: userPassword, ...userInfo } = user;
 
         res
-            .cookie("token", token, {
+            .cookie("access_token", token, {
                 httpOnly: true,
                 // secure:true,  // Production mode
                 maxAge: age,
             })
             .status(200)
             .json(userInfo);
+
     } catch (err) {
         console.log(err);
         res.status(500).json({ message: "Failed to login!" });
@@ -77,5 +95,5 @@ export const login = async (req, res) => {
 };
 
 export const logout = (req, res) => {
-    res.clearCookie("token").status(200).json({ message: "Logout Successful" });
+    res.clearCookie("access_token").status(200).json({ message: "Logout Successful" });
 };
