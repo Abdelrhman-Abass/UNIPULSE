@@ -1,5 +1,5 @@
 import express from 'express'
-import { getUsers, login, logout, register, updateVerificationCode, verifyCode } from '../controllers/auth.controller.js'
+import { forgotPassword, getUsers, login, logout, register, resetPassword, updateVerificationCode, verifyCode } from '../controllers/auth.controller.js'
 
 const router = express.Router()
 
@@ -8,6 +8,9 @@ router.post('/login', login )
 router.post('/logout',logout )
 router.post('/verify/:email',verifyCode )
 router.post('/update-verify',updateVerificationCode )
+
+router.post('/forgot-password', forgotPassword);
+router.post('/reset-password/:token', resetPassword);
 
 router.get('/get-users', getUsers)
 

@@ -188,6 +188,74 @@ export const logout = (req, res) => {
     res.clearCookie("access_token").status(200).json({ message: "Logout Successful" });
 };
 
+
+
+export const forgotPassword = async (req, res) => {
+    const { email } = req.body;
+
+    try {
+        // CHECK IF THE USER EXISTS
+        const user = await prisma.user.findUnique({
+            where: { email },
+        });
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found!" });
+        }
+
+        // GENERATE A JWT RESET TOKEN
+        const resetToken = jwt.sign(
+            { id: user.id },
+            process.env.JWT_SECRET_KEY,
+            { expiresIn: '1h' } // Token expires in 1 hour
+        );
+
+        // CREATE A RESET PASSWORD URL
+        const resetUrl = `http://localhost:3000/api/auth/reset-password/${resetToken}`;
+
+        // Optionally, send the reset URL via email
+        // await sendResetTokenEmail(email, resetUrl);
+        console.log(resetUrl)
+        res.status(200).json(resetUrl)
+
+        // res.status(200).json({ message: "Password reset link has been sent to your email." } , resetUrl);
+
+    } catch (error) {
+        console.error("Error generating password reset token:", error);
+        res.status(500).json({ message: `Failed to generate password reset token: ${error.message}` });
+    }
+};
+
+export const resetPassword = async (req, res) => {
+    const { token } = req.params; // Token from the reset link
+    const { password } = req.body;
+
+    console.log(token , password)
+
+    try {
+        // VERIFY THE TOKEN
+        const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+
+        // UPDATE USER PASSWORD
+        const hashPassword = bcryptjs.hashSync(password, 12);
+
+        await prisma.user.update({
+            where: { id: decoded.id },
+            data: { password: hashPassword },
+        });
+        console.log(hashPassword)
+
+        res.status(200).json({ message: "Password reset successfully." });
+
+    } catch (error) {
+        console.error("Error resetting password:", error);
+        res.status(500).json({ message: `Failed to reset password: ${error.message}` });
+    }
+};
+
+
+
+
 export const getUsers = async (req, res, next) => {
     try {
         const users = await prisma.user.findMany()
