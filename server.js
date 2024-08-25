@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import authRoute from './routes/auth.route.js'
+import usersRoute from './routes/users.route.js'
 
 
 
@@ -17,6 +18,7 @@ app.use(cookieParser()); // allows us to parse incoming cookies
 
 
 app.use("/api/auth",authRoute)
+app.use("/api/users",usersRoute)
 
 
 app.listen(PORT, () => {
