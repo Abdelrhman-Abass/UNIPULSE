@@ -2,55 +2,6 @@ import bcryptjs from "bcryptjs";
 import prisma from "../lib/prisma.js";
 import jwt from 'jsonwebtoken'
 
-export const register = async (req, res) => {
-
-    const { email, username, password } = req.body
-
-    try {
-        // Check the validation of the query parameters
-        if (!email || !password || !username) {
-			throw new Error("All fields are required");
-		}
-
-        // Check if the user is already exists
-        const userAlreadyExists =  await prisma.user.findUnique({
-            where: { email },
-        });
-		console.log("userAlreadyExists", userAlreadyExists);
-
-		if (userAlreadyExists) {
-            console.log(userAlreadyExists)
-			return res.status(400).json({ success: false, message: "User already exists" });
-		}
-
-
-        // HASH THE PASSWORD AND MAKE A NEW VERIFICATION CODE
-        const hashPassword = bcryptjs.hashSync(password, 12);
-        const VerificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-        const VerificationCodeExpires = new Date(Date.now() + 30 * 60 * 1000); // OTP valid for 30 minutes
-
-        const newUser = await prisma.user.create({
-            data: {
-                username,
-                email,
-                password: hashPassword,
-                VerificationCode,
-                VerificationCodeExpires,
-                isVerified:false,
-            }
-        });
-        // await sendEmailVerificationCode(email , VerificationCode.)
-
-        console.log("New User ID  :  " + newUser.id)
-        res.status(201).json( newUser)
-
-    } catch (error) {
-        console.log(error.massage)
-
-        res.status(500).json({ massage: `Failed to create user =>  ${error.massage}` })
-    }
-}
-
 export const login = async (req, res) => {
     const { email, password } = req.body;
 

@@ -4,6 +4,9 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import authRoute from './routes/auth.route.js'
 import usersRoute from './routes/users.route.js'
+import teacherRoute from './routes/teacher.route.js'
+import studentRoute from './routes/student.route.js'
+import adminRoute from './routes/admin.route.js'
 
 
 
@@ -19,6 +22,9 @@ app.use(cookieParser()); // allows us to parse incoming cookies
 
 app.use("/api/auth",authRoute)
 app.use("/api/users",usersRoute)
+app.use("/api/teacher",teacherRoute)
+app.use("/api/student",studentRoute)
+app.use("/api/admin",adminRoute)
 
 
 app.listen(PORT, () => {

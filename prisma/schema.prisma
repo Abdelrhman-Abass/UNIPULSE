@@ -13,8 +13,96 @@ model User {
     username                String    @unique
     password                String
     avatar                  String?
+    officialId              String    @unique
+    role                    Role      @default(STUDENT)
     VerificationCode        String?
     VerificationCodeExpires DateTime?
     isVerified              Boolean   @default(false)
     createdAt               DateTime  @default(now())
+    teacher                 Teacher?
+    student                 Student?  
+    admin                   Admin?
+}
+
+model Teacher {
+    id         String   @id @default(auto()) @map("_id") @db.ObjectId
+    userId     String   @unique @db.ObjectId
+    user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    department String
+    hireDate   DateTime @default(now())
+}
+
+model Student {
+    id       String   @id @default(auto()) @map("_id") @db.ObjectId
+    userId   String   @unique @db.ObjectId
+    user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    grade    String
+    enrolled DateTime
+}
+
+model Admin {
+    id     String @id @default(auto()) @map("_id") @db.ObjectId
+    userId String @unique @db.ObjectId
+    // Relation
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Course {
+    id            String         @id @default(auto()) @map("_id") @db.ObjectId
+    courseId      String         @unique
+    name          String
+    description   String
+    credits       Int
+    department    String
+    teacherId     String         @db.ObjectId
+    schedule      Schedule[]
+    resources     Resource[]
+    quizzes       Quiz[]
+    announcements Announcement[]
+    createdAt     DateTime       @default(now()) @map("created_at")
+    updatedAt     DateTime       @updatedAt @map("updated_at")
+}
+
+model Schedule {
+    id        String   @id @default(auto()) @map("_id") @db.ObjectId
+    courseId  String   @db.ObjectId
+    course    Course   @relation(fields: [courseId], references: [id])
+    day       String // e.g., "Monday", "Tuesday"
+    startTime DateTime
+    endTime   DateTime
+    location  String
+}
+
+model Resource {
+    id          String  @id @default(auto()) @map("_id") @db.ObjectId
+    courseId    String  @db.ObjectId
+    course      Course  @relation(fields: [courseId], references: [id])
+    type        String // e.g., "PDF", "Video"
+    url         String // Link to the resource
+    description String?
+}
+
+model Quiz {
+    id          String   @id @default(auto()) @map("_id") @db.ObjectId
+    courseId    String   @db.ObjectId
+    course      Course   @relation(fields: [courseId], references: [id])
+    title       String
+    description String?
+    questions   String // This can be a JSON string or a reference to another table
+    date        DateTime
+}
+
+model Announcement {
+    id       String   @id @default(auto()) @map("_id") @db.ObjectId
+    courseId String   @db.ObjectId
+    course   Course   @relation(fields: [courseId], references: [id])
+    title    String
+    content  String
+    postedAt DateTime @default(now())
+}
+
+enum Role {
+    TEACHER
+    STUDENT
+    ADMIN
 }
