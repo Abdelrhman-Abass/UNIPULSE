@@ -56,3 +56,14 @@ export const register = async (req, res) => {
     }
 };
 
+export const getTeacher = async (req, res, next) => {
+    try {
+        const teachers = await prisma.teacher.findMany()
+
+        res.status(200).json(teachers)
+    } catch (error) {
+        console.log(error);
+
+        res.status(500).json({ message: "Failed to get users" });
+    }
+}

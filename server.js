@@ -7,6 +7,7 @@ import usersRoute from './routes/users.route.js'
 import teacherRoute from './routes/teacher.route.js'
 import studentRoute from './routes/student.route.js'
 import adminRoute from './routes/admin.route.js'
+import courseRoute from './routes/course.route.js'
 
 
 
@@ -25,6 +26,7 @@ app.use("/api/users",usersRoute)
 app.use("/api/teacher",teacherRoute)
 app.use("/api/student",studentRoute)
 app.use("/api/admin",adminRoute)
+app.use("/api/course",courseRoute)
 
 
 app.listen(PORT, () => {

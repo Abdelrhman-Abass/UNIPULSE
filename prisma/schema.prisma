@@ -30,6 +30,19 @@ model Teacher {
     user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
     department String
     hireDate   DateTime @default(now())
+    courses    Course[] 
+
+}
+
+model StudentCourse {
+    id        String   @id @default(auto()) @map("_id") @db.ObjectId
+    studentId String   @db.ObjectId
+    courseId  String   @db.ObjectId
+
+    student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+    course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+    enrolledAt DateTime @default(now())
 }
 
 model Student {
@@ -38,8 +51,9 @@ model Student {
     user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
     grade    String
     enrolled DateTime
-}
 
+    courses  StudentCourse[]
+}
 model Admin {
     id     String @id @default(auto()) @map("_id") @db.ObjectId
     userId String @unique @db.ObjectId
@@ -54,14 +68,19 @@ model Course {
     description   String
     credits       Int
     department    String
-    teacherId     String         @db.ObjectId
     schedule      Schedule[]
     resources     Resource[]
     quizzes       Quiz[]
+
+    teacherId     String   @db.ObjectId
+    teacher       Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+
     announcements Announcement[]
+    students      StudentCourse[] // Add relation here
     createdAt     DateTime       @default(now()) @map("created_at")
     updatedAt     DateTime       @updatedAt @map("updated_at")
 }
+
 
 model Schedule {
     id        String   @id @default(auto()) @map("_id") @db.ObjectId
